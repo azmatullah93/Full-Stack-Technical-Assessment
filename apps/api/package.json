@@ -1,0 +1,27 @@
+{
+  "name": "@small-web/api",
+  "version": "1.0.0",
+  "private": true,
+  "scripts": {
+    "dev": "npm run build && concurrently -k \"tsc --watch --preserveWatchOutput\" \"node --watch --env-file-if-exists=../../.env dist/main.js\"",
+    "build": "tsc -p tsconfig.json",
+    "start": "node --env-file-if-exists=../../.env dist/main.js",
+    "typecheck": "tsc --noEmit",
+    "seed": "npm run build && node --env-file-if-exists=../../.env dist/seed.js"
+  },
+  "dependencies": {
+    "@nestjs/common": "^11.1.0",
+    "@nestjs/core": "^11.1.0",
+    "@nestjs/platform-express": "^11.1.0",
+    "class-transformer": "^0.5.1",
+    "class-validator": "^0.14.2",
+    "mongodb": "^6.20.0",
+    "reflect-metadata": "^0.2.2",
+    "rxjs": "^7.8.2",
+    "sanitize-html": "^2.17.0"
+  },
+  "devDependencies": {
+    "@types/express": "^5.0.3",
+    "@types/sanitize-html": "^2.16.0"
+  }
+}
