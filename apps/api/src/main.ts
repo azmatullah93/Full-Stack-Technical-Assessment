@@ -12,7 +12,9 @@ class AppModule {}
 async function bootstrap() {
   const app = await NestFactory.create(AppModule, { bodyParser: false });
   app.use(json({ limit: '200kb' }));
-  app.useGlobalPipes(new ValidationPipe({ transform: true, whitelist: true, forbidNonWhitelisted: true }));
+  app.useGlobalPipes(
+    new ValidationPipe({ transform: true, whitelist: true, forbidNonWhitelisted: true }),
+  );
   app.setGlobalPrefix('api');
   app.enableShutdownHooks();
   await app.listen(Number(process.env.PORT ?? 3001), '127.0.0.1');

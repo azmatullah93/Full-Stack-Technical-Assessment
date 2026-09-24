@@ -1,4 +1,9 @@
-import { BadRequestException, ConflictException, Injectable, NotFoundException } from '@nestjs/common';
+import {
+  BadRequestException,
+  ConflictException,
+  Injectable,
+  NotFoundException,
+} from '@nestjs/common';
 import { MongoServerError } from 'mongodb';
 import { Database, Site } from './database';
 import { cleanHtml, normalizeAddress, visibleText } from './content';
@@ -9,39 +14,59 @@ export class WebService {
   constructor(private readonly database: Database) {}
 
   async people() {
-    return (await this.database.people.find().sort({ name: 1 }).toArray())
-      .map(({ _id, ...person }) => ({ id: _id, ...person }));
+    return (await this.database.people.find().sort({ name: 1 }).toArray()).map(
+      ({ _id, ...person }) => ({ id: _id, ...person }),
+    );
   }
 
   async directory() {
-    return this.database.sites.find({}, { projection: { _id: 0, html: 0, text: 0 } })
-      .sort({ publishedAt: -1, address: 1 }).limit(100).toArray();
+    return this.database.sites
+      .find({}, { projection: { _id: 0, html: 0, text: 0 } })
+      .sort({ publishedAt: -1, address: 1 })
+      .limit(100)
+      .toArray();
   }
 
   async site(input: string) {
     const address = normalizeAddress(input);
     if (!address) throw new BadRequestException('Use an address such as tidepool.zz.');
-    const site = await this.database.sites.findOne({ address }, { projection: { _id: 0, text: 0 } });
+    const site = await this.database.sites.findOne(
+      { address },
+      { projection: { _id: 0, text: 0 } },
+    );
     if (!site) throw new NotFoundException('Nobody has published at this address yet.');
     return site;
   }
 
   async search(input: string) {
     const query = input.trim();
-    if (!query || query.length > 200) throw new BadRequestException('Search needs 1–200 characters.');
-    const sites = await this.database.sites.find<Site & { score: number }>({ $text: { $search: query } }, {
-      projection: { _id: 0, html: 0, score: { $meta: 'textScore' } },
-    }).sort({ score: { $meta: 'textScore' }, address: 1 }).toArray();
+    if (!query || query.length > 200)
+      throw new BadRequestException('Search needs 1–200 characters.');
+    const sites = await this.database.sites
+      .find<Site & { score: number }>(
+        { $text: { $search: query } },
+        {
+          projection: { _id: 0, html: 0, score: { $meta: 'textScore' } },
+        },
+      )
+      .sort({ score: { $meta: 'textScore' }, address: 1 })
+      .toArray();
     const terms = query.toLowerCase().match(/[\p{L}\p{N}]+/gu) ?? [];
     return sites.map(({ text, score: _score, ...site }) => {
-      const matches = terms.map(term => text.toLowerCase().indexOf(term)).filter(index => index >= 0);
+      const matches = terms
+        .map((term) => text.toLowerCase().indexOf(term))
+        .filter((index) => index >= 0);
       const start = Math.max(0, (matches.length ? Math.min(...matches) : 0) - 55);
-      return { ...site, excerpt: `${start ? '…' : ''}${text.slice(start, start + 230)}${text.length > start + 230 ? '…' : ''}` };
+      return {
+        ...site,
+        excerpt: `${start ? '…' : ''}${text.slice(start, start + 230)}${text.length > start + 230 ? '…' : ''}`,
+      };
     });
   }
 
   private async requirePerson(personId: string) {
-    if (!await this.database.people.findOne({ _id: personId })) throw new NotFoundException('Choose a person from the list.');
+    if (!(await this.database.people.findOne({ _id: personId })))
+      throw new NotFoundException('Choose a person from the list.');
   }
 
   async publish(input: PublishSiteDto) {
@@ -65,9 +90,13 @@ export class WebService {
     await this.requirePerson(input.personId);
     const { id, ...visit } = input;
     // Retries keep one arrival: the client creates the id when a page is shown.
-    await this.database.visits.updateOne({ _id: id, personId: input.personId }, {
-      $setOnInsert: { ...visit, visitedAt: new Date().toISOString() },
-    }, { upsert: true });
+    await this.database.visits.updateOne(
+      { _id: id, personId: input.personId },
+      {
+        $setOnInsert: { ...visit, visitedAt: new Date().toISOString() },
+      },
+      { upsert: true },
+    );
     return { id };
   }
 
@@ -77,19 +106,42 @@ export class WebService {
     if (cursor) {
       try {
         after = JSON.parse(Buffer.from(cursor, 'base64url').toString());
-        if (!after || typeof after.id !== 'string' || typeof after.visitedAt !== 'string' || Number.isNaN(Date.parse(after.visitedAt))) throw new Error();
-      } catch { throw new BadRequestException('Invalid history cursor.'); }
+        if (
+          !after ||
+          typeof after.id !== 'string' ||
+          typeof after.visitedAt !== 'string' ||
+          Number.isNaN(Date.parse(after.visitedAt))
+        )
+          throw new Error();
+      } catch {
+        throw new BadRequestException('Invalid history cursor.');
+      }
     }
-    const visits = await this.database.visits.find({
-      personId,
-      ...(after ? { $or: [{ visitedAt: { $lt: after.visitedAt } }, { visitedAt: after.visitedAt, _id: { $lt: after.id } }] } : {}),
-    }).sort({ visitedAt: -1, _id: -1 }).limit(31).toArray();
+    const visits = await this.database.visits
+      .find({
+        personId,
+        ...(after
+          ? {
+              $or: [
+                { visitedAt: { $lt: after.visitedAt } },
+                { visitedAt: after.visitedAt, _id: { $lt: after.id } },
+              ],
+            }
+          : {}),
+      })
+      .sort({ visitedAt: -1, _id: -1 })
+      .limit(31)
+      .toArray();
     const page = visits.slice(0, 30);
     const last = page.at(-1);
     return {
       items: page.map(({ _id, ...visit }) => ({ id: _id, ...visit })),
-      nextCursor: visits.length > 30 && last
-        ? Buffer.from(JSON.stringify({ visitedAt: last.visitedAt, id: last._id })).toString('base64url') : null,
+      nextCursor:
+        visits.length > 30 && last
+          ? Buffer.from(JSON.stringify({ visitedAt: last.visitedAt, id: last._id })).toString(
+              'base64url',
+            )
+          : null,
     };
   }
 }

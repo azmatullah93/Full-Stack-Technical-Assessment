@@ -1,7 +1,11 @@
 import { Injectable, OnModuleDestroy, OnModuleInit } from '@nestjs/common';
 import { MongoClient } from 'mongodb';
 
-export interface Person { _id: string; name: string; color: string }
+export interface Person {
+  _id: string;
+  name: string;
+  color: string;
+}
 export interface Site {
   address: string;
   title: string;
@@ -22,9 +26,12 @@ export interface Visit {
 
 @Injectable()
 export class Database implements OnModuleInit, OnModuleDestroy {
-  private readonly client = new MongoClient(process.env.MONGODB_URI ?? 'mongodb://127.0.0.1:27017', {
-    serverSelectionTimeoutMS: 5000,
-  });
+  private readonly client = new MongoClient(
+    process.env.MONGODB_URI ?? 'mongodb://127.0.0.1:27017',
+    {
+      serverSelectionTimeoutMS: 30_000,
+    },
+  );
   private readonly db = this.client.db(process.env.MONGODB_DATABASE ?? 'small_web');
   readonly people = this.db.collection<Person>('people');
   readonly sites = this.db.collection<Site>('sites');
@@ -39,5 +46,7 @@ export class Database implements OnModuleInit, OnModuleDestroy {
     ]);
   }
 
-  async onModuleDestroy() { await this.client.close(); }
+  async onModuleDestroy() {
+    await this.client.close();
+  }
 }

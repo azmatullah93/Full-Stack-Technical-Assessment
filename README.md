@@ -15,8 +15,11 @@ npm run dev -w apps/api
 ```sh
 npm run typecheck
 npm test
+npm run test:integration
 npx playwright install chromium
 npm run test:e2e
+# With the seeded application running:
+npm run test:live
 npm run build
 npm run start -w apps/api
 npm run start -w apps/web

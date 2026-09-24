@@ -2,14 +2,22 @@
   "name": "small-web",
   "version": "1.0.0",
   "private": true,
-  "workspaces": ["apps/*"],
-  "engines": { "node": ">=22.15.0" },
+  "workspaces": [
+    "apps/*"
+  ],
+  "engines": {
+    "node": ">=22.15.0"
+  },
   "scripts": {
     "dev": "concurrently -n api,web -c blue,green \"npm run dev -w apps/api\" \"npm run dev -w apps/web\"",
     "build": "npm run build --workspaces",
     "typecheck": "npm run typecheck --workspaces",
+    "format": "prettier --write apps tests playwright.config.ts vitest.config.ts",
+    "format:check": "prettier --check apps tests playwright.config.ts vitest.config.ts",
     "test": "vitest run",
     "test:e2e": "playwright test",
+    "test:integration": "npm run build -w apps/api && node --test tests/integration/api.test.mjs",
+    "test:live": "node --env-file-if-exists=.env tests/live/walkthrough.mjs",
     "seed": "npm run seed -w apps/api",
     "db:up": "docker compose up -d --wait"
   },
@@ -17,6 +25,7 @@
     "@playwright/test": "^1.56.0",
     "@types/node": "^24.0.0",
     "concurrently": "^9.2.0",
+    "prettier": "^3.9.9",
     "typescript": "^5.9.0",
     "vitest": "^3.2.0"
   }
