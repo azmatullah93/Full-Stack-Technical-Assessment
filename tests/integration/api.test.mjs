@@ -86,6 +86,83 @@ test('seeding twice preserves all sites, people, and the hour of visits', async 
   assert.equal(Math.max(...times) - Math.min(...times), 3_600_000);
 });
 
+test('seeded visits replay as valid links and back/forward movements for every person', async () => {
+  const sites = new Map(
+    (await db.collection('sites').find().toArray()).map((site) => [site.address, site]),
+  );
+  for (const person of await db.collection('people').find().toArray()) {
+    const visits = await db
+      .collection('visits')
+      .find({ personId: person._id })
+      .sort({ visitedAt: 1 })
+      .toArray();
+    let trail = [];
+    let cursor = -1;
+    for (const visit of visits) {
+      if (visit.source === 'back' || visit.source === 'forward') {
+        cursor += visit.source === 'back' ? -1 : 1;
+        assert.ok(cursor >= 0 && cursor < trail.length, 'Traversal stays within the trail');
+        assert.equal(visit.address, trail[cursor]);
+      } else {
+        if (visit.source === 'link') {
+          const previous = sites.get(trail[cursor]);
+          assert.ok(previous, 'A link must originate on an existing page');
+          assert.ok(
+            previous.html.includes(`data-address="${visit.address}"`),
+            `${trail[cursor]} must link to ${visit.address}`,
+          );
+        } else {
+          assert.equal(visit.source, 'typed');
+        }
+        trail = [...trail.slice(0, cursor + 1), visit.address];
+        cursor = trail.length - 1;
+      }
+      assert.equal(visit.outcome, sites.has(visit.address) ? 'found' : 'missing');
+    }
+    assert.equal(
+      new Set(visits.filter((visit) => visit.outcome === 'found').map((visit) => visit.address))
+        .size,
+      10,
+    );
+    assert.ok(visits.some((visit) => visit.outcome === 'missing'));
+    assert.ok(visits.some((visit) => visit.source === 'back'));
+    assert.ok(visits.some((visit) => visit.source === 'forward'));
+    assert.equal(Date.parse(visits.at(-1).visitedAt) - Date.parse(visits[0].visitedAt), 3_600_000);
+  }
+});
+
+test('reseeding repairs old fixture visits while preserving user-created data', async () => {
+  const visit = {
+    _id: randomUUID(),
+    personId: 'mira',
+    address: 'personal.zz',
+    source: 'typed',
+    outcome: 'found',
+    title: 'Personal',
+    visitedAt: '2026-09-21T10:00:00.000Z',
+  };
+  const site = {
+    address: 'personal.zz',
+    title: 'Personal',
+    authorId: 'mira',
+    html: '<p>Personal notes</p>',
+    text: 'Personal notes',
+    publishedAt: visit.visitedAt,
+  };
+  const original = await db.collection('visits').findOne({ _id: 'seed-mira-007' });
+  await db
+    .collection('visits')
+    .updateOne({ _id: original._id }, { $set: { address: 'repair-cafe.zz', source: 'back' } });
+  await db.collection('visits').insertOne(visit);
+  await db.collection('sites').insertOne(site);
+  await seed();
+  assert.deepEqual(await db.collection('visits').findOne({ _id: original._id }), original);
+  assert.deepEqual(await db.collection('visits').findOne({ _id: visit._id }), visit);
+  assert.deepEqual(await db.collection('sites').findOne({ address: site.address }), site);
+  await db.collection('visits').deleteOne({ _id: visit._id });
+  await db.collection('sites').deleteOne({ address: site.address });
+});
+
 test('resolves canonical addresses and searches text that is absent from the title', async () => {
   const resolved = await request('/sites/TIDEPOOL.ZZ');
   assert.equal(resolved.status, 200);

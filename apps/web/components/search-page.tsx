@@ -15,8 +15,8 @@ export function SearchPage({
 }) {
   return (
     <section className="results-page">
-      <span className="eyebrow">FOLLOW YOUR CURIOSITY</span>
-      <h1>Looking for “{page.query}”</h1>
+      <span className="eyebrow">SEARCH</span>
+      <h1>Results for “{page.query}”</h1>
       <p className="results-count">
         {page.results.length} {page.results.length === 1 ? 'page' : 'pages'} found across titles and
         page text.
@@ -47,10 +47,10 @@ export function SearchPage({
       ) : (
         <div className="empty-results">
           <Icon name="search" size={30} />
-          <h2>No paths crossed this time.</h2>
+          <h2>No results</h2>
           <p>Try a different word, like “water”, “garden”, or “radio”.</p>
           <button className="secondary-button" onClick={onHome}>
-            Explore the neighborhood
+            Browse sites
           </button>
         </div>
       )}

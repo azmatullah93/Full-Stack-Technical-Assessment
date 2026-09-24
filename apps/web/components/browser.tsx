@@ -57,7 +57,7 @@ export function Browser() {
             </button>
           </>
         ) : (
-          <p role="status">Opening a little room to wander…</p>
+          <p role="status">Loading sites…</p>
         )}
       </main>
     );
@@ -133,15 +133,12 @@ function BrowserWorkspace({
           <span className="brand-mark">
             <Icon name="globe" size={24} />
           </span>
-          <span>
-            small<span className="brand-serif">web</span>
-            <span className="brand-period">.</span>
-          </span>
+          <span>Small Web</span>
         </button>
-        <span className="header-caption">A LITTLE ROOM TO WANDER</span>
+
         <div className="header-actions">
           <label className="person-picker">
-            <span className="avatar" style={{ background: person.color }}>
+            <span className="avatar">
               {person.name
                 .split(' ')
                 .map((part) => part[0])
@@ -236,9 +233,7 @@ function BrowserWorkspace({
           </button>
         </div>
         <div className="search-toolbar">
-          <span className="web-label">
-            <span className="status-dot" /> THE SMALL WEB
-          </span>
+          <span className="web-label">Browse &amp; search</span>
           <form
             onSubmit={(event) => {
               event.preventDefault();
@@ -248,7 +243,7 @@ function BrowserWorkspace({
             <Icon name="search" size={16} />
             <input
               aria-label="Search the small web"
-              placeholder="Find something in the small web…"
+              placeholder="Search titles and page text"
               value={query}
               onChange={(event) => setQuery(event.target.value)}
               maxLength={200}
@@ -314,6 +309,7 @@ function BrowserWorkspace({
               {page.kind === 'home' && (
                 <HomePage
                   directory={directory}
+                  people={people}
                   onNavigate={visit}
                   onPublish={() => setPublishOpen(true)}
                 />
@@ -339,28 +335,23 @@ function BrowserWorkspace({
         </div>
         <footer className="browser-footer">
           <span>
-            <span className={`status-dot ${page.kind === 'missing' ? 'missing' : ''}`} />
+            {/* <span className={`status-dot ${page.kind === 'missing' ? 'missing' : ''}`} /> */}
             {browser.loading
-              ? 'Finding your next stop…'
+              ? 'Loading…'
               : page.kind === 'site'
-                ? 'You’re here. Stay a while.'
+                ? 'Page loaded'
                 : page.kind === 'missing'
                   ? 'Address not found'
                   : page.kind === 'search'
-                    ? 'A few threads to follow.'
-                    : 'A small web, with room for you.'}
+                    ? 'Search results'
+                    : 'Ready'}
           </span>
           <span className="mono">
-            {page.kind === 'site' || page.kind === 'missing'
-              ? pageAddress(page)
-              : 'Made of people, not algorithms'}
+            {page.kind === 'site' || page.kind === 'missing' ? pageAddress(page) : '.zz network'}
           </span>
         </footer>
       </section>
-      <footer className="app-footer">
-        <span>A slower kind of internet.</span>
-        <span>Read something. Follow a link. Make a little space.</span>
-      </footer>
+
       {publishOpen && (
         <PublishDialog
           people={people}

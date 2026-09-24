@@ -74,7 +74,7 @@ export function HistoryPanel({
     <aside className="history-panel" aria-label="Browsing history">
       <div className="history-heading">
         <div>
-          <span className="eyebrow">YOUR FOOTSTEPS</span>
+          <span className="eyebrow">BROWSING</span>
           <h2>History</h2>
         </div>
         <button className="icon-button" onClick={onClose} aria-label="Close history">
@@ -83,9 +83,7 @@ export function HistoryPanel({
       </div>
       <p className="history-person">Places visited by {name.split(' ')[0]}.</p>
       <div className="history-list">
-        {!loading && !error && !history.items.length && (
-          <p className="muted">A fresh start. Your visits will appear here.</p>
-        )}
+        {!loading && !error && !history.items.length && <p className="muted">No visits yet.</p>}
         {history.items.map((visit, index) => {
           const date = new Date(visit.visitedAt).toLocaleDateString(undefined, {
             month: 'short',

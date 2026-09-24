@@ -9,8 +9,8 @@ html {
 }
 body {
   margin: 0;
-  background: #fffef9;
-  color: #344438;
+  background: #ffffff;
+  color: #34312e;
   font:
     17px/1.85 Georgia,
     "Times New Roman",
@@ -20,18 +20,18 @@ body {
 body > main {
   max-width: 740px;
   margin: 0 auto;
-  padding: 62px 54px 90px;
+  padding: 40px 48px 72px;
 }
 h1,
 h2,
 h3 {
-  color: #273e30;
+  color: #272421;
   font-weight: 400;
   line-height: 1.18;
   letter-spacing: -0.035em;
 }
 h1 {
-  font-size: clamp(34px, 5vw, 49px);
+  font-size: clamp(30px, 4vw, 38px);
   margin: 24px 0 32px;
 }
 h2 {
@@ -45,23 +45,23 @@ p {
   margin: 0 0 24px;
 }
 a {
-  color: #3e6950;
+  color: #b94712;
   text-decoration-thickness: 1px;
   text-underline-offset: 4px;
 }
 a:hover {
-  color: #192f22;
+  color: #8e330b;
 }
 a:focus-visible,
 summary:focus-visible {
-  outline: 2px solid #718b5d;
+  outline: 2px solid #c6531c;
   outline-offset: 5px;
 }
 blockquote {
   margin: 34px 0;
   padding: 16px 24px;
-  border-left: 2px solid #bdcba7;
-  color: #76806b;
+  border-left: 2px solid #dcbaa7;
+  color: #746c66;
   font-style: italic;
 }
 li {
@@ -70,7 +70,7 @@ li {
 pre {
   overflow: auto;
   padding: 20px;
-  background: #efefe6;
+  background: #f5f3f0;
   font: 14px/1.6 monospace;
 }
 code {
@@ -83,17 +83,17 @@ table {
 th,
 td {
   padding: 10px;
-  border: 1px solid #dedfd2;
+  border: 1px solid #e4dfd9;
 }
 hr {
   border: 0;
-  border-top: 1px solid #dedfd2;
+  border-top: 1px solid #e4dfd9;
   margin: 30px 0;
 }
 details {
   margin: 32px 0;
   padding: 16px 20px;
-  border: 1px solid #e2e4d7;
+  border: 1px solid #e4dfd9;
   border-radius: 6px;
   font-size: 15px;
 }

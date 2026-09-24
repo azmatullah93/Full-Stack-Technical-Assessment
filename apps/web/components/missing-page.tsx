@@ -13,14 +13,11 @@ export function MissingPage({
 }) {
   return (
     <section className="missing-page">
-      <span className="missing-symbol" aria-hidden="true">
-        ?
-      </span>
-      <span className="eyebrow">A ROAD LESS TRAVELED</span>
-      <h1>Nobody lives here. Yet.</h1>
+      <span className="eyebrow">404</span>
+      <h1>Address not found</h1>
       <p>
         There’s no page at <strong className="mono">{address}</strong>.<br />
-        Maybe it never existed. Maybe it’s waiting for someone.
+        Check the address or choose a site from the directory.
       </p>
       <div>
         <button className="primary-button" disabled={!canBack} onClick={onBack}>
@@ -28,10 +25,9 @@ export function MissingPage({
           Go back
         </button>
         <button className="secondary-button" onClick={onHome}>
-          Back to the neighborhood
+          Browse sites
         </button>
       </div>
-      <small>This address is still part of your journey.</small>
     </section>
   );
 }

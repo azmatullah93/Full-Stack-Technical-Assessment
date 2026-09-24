@@ -193,6 +193,32 @@ const pages = [
   },
 ];
 
+type SeedAction = { source: 'typed' | 'link'; address: string } | { source: 'back' | 'forward' };
+
+const browsingTrail: SeedAction[] = [
+  { source: 'typed', address: 'tidepool.zz' },
+  { source: 'link', address: 'moss.zz' },
+  { source: 'link', address: 'observatory.zz' },
+  { source: 'link', address: 'radio-room.zz' },
+  { source: 'link', address: 'repair-cafe.zz' },
+  { source: 'link', address: 'paper-plane.zz' },
+  { source: 'link', address: 'field-recordings.zz' },
+  { source: 'link', address: 'seed-library.zz' },
+  { source: 'link', address: 'bread-club.zz' },
+  { source: 'link', address: 'night-train.zz' },
+  { source: 'link', address: 'tidepool.zz' },
+  { source: 'link', address: 'lost-lighthouse.zz' },
+  { source: 'back' },
+  { source: 'forward' },
+  { source: 'back' },
+  { source: 'link', address: 'moss.zz' },
+  { source: 'back' },
+  { source: 'forward' },
+  { source: 'back' },
+  { source: 'link', address: 'night-train.zz' },
+  { source: 'back' },
+];
+
 async function seed() {
   const db = new Database();
   await db.onModuleInit();
@@ -220,20 +246,29 @@ async function seed() {
     }
     for (let personIndex = 0; personIndex < people.length; personIndex++) {
       const count = personIndex === 0 ? 41 : 15;
+      let trail: string[] = [];
+      let cursor = -1;
       for (let index = 0; index < count; index++) {
-        const page = pages[(index + personIndex * 2) % pages.length];
-        const missing = index % 13 === 12;
+        const action = browsingTrail[index % browsingTrail.length];
+        if ('address' in action) {
+          trail = [...trail.slice(0, cursor + 1), action.address];
+          cursor = trail.length - 1;
+        } else {
+          cursor += action.source === 'back' ? -1 : 1;
+        }
+        const address = trail[cursor];
+        const page = pages.find((page) => page.address === address);
         const id = `seed-${people[personIndex]._id}-${String(index).padStart(3, '0')}`;
+        // Stable seed IDs let reruns repair fixture history without touching real visits.
         await db.visits.updateOne(
           { _id: id },
           {
-            $setOnInsert: {
-              _id: id,
+            $set: {
               personId: people[personIndex]._id,
-              address: missing ? 'lost-lighthouse.zz' : page.address,
-              title: missing ? 'Address not found' : page.title,
-              source: index === 0 ? 'typed' : index % 7 === 0 ? 'back' : 'link',
-              outcome: missing ? 'missing' : 'found',
+              address,
+              title: page?.title ?? 'Address not found',
+              source: action.source,
+              outcome: page ? 'found' : 'missing',
               visitedAt: new Date(
                 Date.UTC(2026, 8, 20, 10) + index * (3_600_000 / (count - 1)),
               ).toISOString(),
@@ -243,7 +278,9 @@ async function seed() {
         );
       }
     }
-    console.log('Seed ready: 10 sites, 5 people, 101 visits. Existing data left intact.');
+    console.log(
+      'Seed ready: 10 sites, 5 people, 101 visits. Seed history refreshed; user data preserved.',
+    );
   } finally {
     await db.onModuleDestroy();
   }

@@ -79,7 +79,7 @@ async function mockWeb(page: Page) {
     return respond({ message: 'Unexpected request' }, 500);
   });
   await page.goto('/');
-  await expect(page.getByRole('heading', { name: 'A little room to wander.' })).toBeVisible();
+  await expect(page.getByRole('heading', { name: 'Site directory' })).toBeVisible();
   return { visits, requests, published };
 }
 
@@ -156,14 +156,14 @@ test('restores search results and their reading position', async ({ page }) => {
   const { requests } = await mockWeb(page);
   await page.getByRole('textbox', { name: 'Search the small web' }).fill('water');
   await page.getByRole('button', { name: 'Search', exact: true }).click();
-  await expect(page.getByRole('heading', { name: 'Looking for “water”' })).toBeVisible();
+  await expect(page.getByRole('heading', { name: 'Results for “water”' })).toBeVisible();
   await page.locator('.page-viewport').evaluate((element) => {
     element.scrollTop = 100;
   });
   await page.getByRole('button', { name: /moss.zz A small green atlas/ }).click();
   await expect(page.frameLocator('iframe').locator('h1')).toHaveText(titles[1]);
   await page.getByRole('button', { name: 'Back', exact: true }).click();
-  await expect(page.getByRole('heading', { name: 'Looking for “water”' })).toBeVisible();
+  await expect(page.getByRole('heading', { name: 'Results for “water”' })).toBeVisible();
   await expect(page.getByRole('textbox', { name: 'Search the small web' })).toHaveValue('water');
   expect(requests.filter((request) => request.startsWith('GET /api/search'))).toHaveLength(1);
   await expect(page.locator('.search-result')).toHaveCount(4);
@@ -178,7 +178,7 @@ test('broken links are visits and history is isolated per person and jumpable', 
   const { visits } = await mockWeb(page);
   await goTo(page, 'tidepool.zz');
   await page.frameLocator('iframe').getByRole('link', { name: 'The lost lighthouse' }).click();
-  await expect(page.getByRole('heading', { name: 'Nobody lives here. Yet.' })).toBeVisible();
+  await expect(page.getByRole('heading', { name: 'Address not found' })).toBeVisible();
   await expect.poll(() => visits.length).toBe(2);
   expect(visits[1]).toMatchObject({
     address: 'lost-lighthouse.zz',
@@ -192,11 +192,11 @@ test('broken links are visits and history is isolated per person and jumpable', 
   ).toBeVisible();
   await page.getByRole('combobox', { name: 'Browsing as' }).selectOption('eli');
   await page.getByRole('button', { name: 'History', exact: true }).click();
-  await expect(page.getByText('A fresh start. Your visits will appear here.')).toBeVisible();
+  await expect(page.getByText('No visits yet.')).toBeVisible();
   await goTo(page, 'moss.zz');
   await expect.poll(() => visits.filter((visit) => visit.personId === 'eli').length).toBe(1);
   await page.getByRole('combobox', { name: 'Browsing as' }).selectOption('mira');
-  await expect(page.getByRole('heading', { name: 'Nobody lives here. Yet.' })).toBeVisible();
+  await expect(page.getByRole('heading', { name: 'Address not found' })).toBeVisible();
   await page.getByRole('button', { name: 'History', exact: true }).click();
   await page
     .getByRole('complementary')
@@ -238,7 +238,7 @@ test('failed requests do not alter the trail and superseded responses do not win
 
 test('publishes as a chosen author and handles an occupied address', async ({ page }) => {
   await mockWeb(page);
-  await page.getByRole('button', { name: 'Publish a page', exact: true }).click();
+  await page.locator('header').getByRole('button', { name: 'Publish a page', exact: true }).click();
   const dialog = page.getByRole('dialog');
   await dialog.getByLabel('Site address').fill('tidepool.zz');
   await dialog.getByLabel('Page title').fill('My little garden');
@@ -248,7 +248,7 @@ test('publishes as a chosen author and handles an occupied address', async ({ pa
   await expect(dialog.getByRole('alert')).toContainText('already belongs');
   await dialog.getByLabel('Site address').fill('my-garden.zz');
   await dialog.getByRole('button', { name: 'Publish page', exact: true }).click();
-  await expect(dialog.getByRole('heading', { name: 'A new corner of the web.' })).toBeVisible();
+  await expect(dialog.getByRole('heading', { name: 'Page published' })).toBeVisible();
   await dialog.getByRole('button', { name: 'Visit your page' }).click();
   await expect(page.frameLocator('iframe').locator('h1')).toHaveText('My little garden');
   await expect(page.getByText('A page by Eli Brooks')).toBeVisible();

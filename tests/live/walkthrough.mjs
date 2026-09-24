@@ -16,13 +16,13 @@ try {
   await client.connect();
   await mkdir('test-results', { recursive: true });
   await page.goto(baseUrl);
-  await expect(page.getByRole('heading', { name: 'A little room to wander.' })).toBeVisible({
+  await expect(page.getByRole('heading', { name: 'Site directory' })).toBeVisible({
     timeout: 20_000,
   });
   await expect.poll(() => page.locator('.directory-card').count()).toBeGreaterThanOrEqual(10);
   await page.screenshot({ path: 'test-results/live-desktop.png', fullPage: true });
 
-  await page.getByRole('button', { name: 'Start at the tidepool' }).click();
+  await page.locator('.directory-card').filter({ hasText: 'tidepool.zz' }).click();
   await expect(page.frameLocator('iframe').locator('h1')).toHaveText('The ocean, at ankle height.');
   await page.screenshot({ path: 'test-results/live-reading.png', fullPage: true });
   for (const link of [
@@ -52,11 +52,11 @@ try {
     'Pay attention to the overlooked.',
   );
   await page.getByRole('button', { name: 'Back', exact: true }).click();
-  await expect(page.getByRole('heading', { name: 'Looking for “poikilohydry”' })).toBeVisible();
+  await expect(page.getByRole('heading', { name: 'Results for “poikilohydry”' })).toBeVisible();
 
   await page.getByRole('textbox', { name: 'Site address', exact: true }).fill('lost-lighthouse.zz');
   await page.getByRole('button', { name: 'Go to address', exact: true }).click();
-  await expect(page.getByRole('heading', { name: 'Nobody lives here. Yet.' })).toBeVisible();
+  await expect(page.getByRole('heading', { name: 'Address not found' })).toBeVisible();
   await page.getByRole('button', { name: 'History', exact: true }).click();
   await expect(page.locator('.history-item').first()).toContainText('lost-lighthouse.zz');
   await page.getByRole('button', { name: 'Earlier visits' }).click();
@@ -74,7 +74,7 @@ try {
       '<h1>A test garden</h1><p>Chrysanthemum notes.</p><script>parent.document.body.innerHTML="escaped"</script><p><a href="moss.zz">Visit moss</a></p>',
     );
   await dialog.getByRole('button', { name: 'Publish page', exact: true }).click();
-  await expect(dialog.getByRole('heading', { name: 'A new corner of the web.' })).toBeVisible();
+  await expect(dialog.getByRole('heading', { name: 'Page published' })).toBeVisible();
   await dialog.getByRole('button', { name: 'Visit your page' }).click();
   await expect(page.frameLocator('iframe').locator('h1')).toHaveText('A test garden');
   await expect(page.getByText('A page by Eli Brooks')).toBeVisible();
@@ -87,7 +87,7 @@ try {
   await db.collection('sites').deleteOne({ address });
   await page.setViewportSize({ width: 390, height: 844 });
   await page.goto(baseUrl);
-  await expect(page.getByRole('heading', { name: 'A little room to wander.' })).toBeVisible();
+  await expect(page.getByRole('heading', { name: 'Site directory' })).toBeVisible();
   await page.screenshot({ path: 'test-results/live-mobile.png', fullPage: true });
   expect(errors).toEqual([]);
   console.log(

@@ -6,7 +6,7 @@ import type { Person, Site } from '../lib/types';
 import { Icon } from './icon';
 
 const starterHtml =
-  '<h1>A small thing worth sharing.</h1>\n<p>This is my corner of the small web.</p>\n<p>Take a walk to <a href="tidepool.zz">the tidepool</a>.</p>';
+  '<h1>My page</h1>\n<p>Write your page here.</p>\n<p>Visit <a href="tidepool.zz">the tidepool</a>.</p>';
 
 export function PublishDialog({
   people,
@@ -60,7 +60,7 @@ export function PublishDialog({
       }}
     >
       <div className="dialog-top">
-        <span className="eyebrow">MAKE YOURSELF AT HOME</span>
+        <span className="eyebrow">NEW SITE</span>
         <button
           className="icon-button"
           disabled={saving}
@@ -75,10 +75,9 @@ export function PublishDialog({
           <span className="success-icon">
             <Icon name="check" size={30} />
           </span>
-          <h2 id="publish-heading">A new corner of the web.</h2>
+          <h2 id="publish-heading">Page published</h2>
           <p>
-            Your page is live at <strong className="mono">{published.address}</strong>. Anyone can
-            wander in.
+            Your page is live at <strong className="mono">{published.address}</strong>.
           </p>
           <button className="primary-button" onClick={() => onPublished(published)}>
             Visit your page <Icon name="forward" size={18} />
@@ -86,10 +85,8 @@ export function PublishDialog({
         </div>
       ) : (
         <>
-          <h2 id="publish-heading">Leave a page of your own.</h2>
-          <p className="dialog-intro">
-            A thought, a field note, a little obsession. Every site starts with a person.
-          </p>
+          <h2 id="publish-heading">Publish a page</h2>
+          <p className="dialog-intro">Choose an address and author, then add your HTML.</p>
           <form onSubmit={publish}>
             <div className="form-row">
               <label>
@@ -100,7 +97,7 @@ export function PublishDialog({
                   maxLength={67}
                   value={address}
                   onChange={(event) => setAddress(event.target.value)}
-                  placeholder="your-corner.zz"
+                  placeholder="my-page.zz"
                   spellCheck={false}
                   autoCapitalize="none"
                   pattern="[a-zA-Z0-9][a-zA-Z0-9\-]*\.zz"
@@ -125,7 +122,7 @@ export function PublishDialog({
                 maxLength={120}
                 value={title}
                 onChange={(event) => setTitle(event.target.value)}
-                placeholder="Give your page a name"
+                placeholder="Page title"
               />
             </label>
             <label>
@@ -150,7 +147,14 @@ export function PublishDialog({
               </p>
             )}
             <div className="dialog-actions">
-              <span className="muted">One address. One little world.</span>
+              <button
+                className="secondary-button"
+                type="button"
+                disabled={saving}
+                onClick={onClose}
+              >
+                Cancel
+              </button>
               <button className="primary-button" disabled={saving} type="submit">
                 {saving ? 'Publishing…' : 'Publish page'}
                 <Icon name="arrow" size={17} />
